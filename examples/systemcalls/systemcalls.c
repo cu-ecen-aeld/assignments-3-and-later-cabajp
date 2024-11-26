@@ -76,31 +76,37 @@ bool do_exec(int count, ...)
 */
 	
     fflush(stdout);
+
     pid_t pid = fork();
+    int status, exe_err = 0;	
 
-    if (pid) {
-      int wstatus = 0;
-      if (waitpid(pid, &wstatus, 0) == -1) 
-      {
-        perror("waitpid");
-//        exit(EXIT_FAILURE);
-        return false;
-      }
-
-      if (WIFEXITED(wstatus)) 
-      {
-          printf("error: %d\n", WEXITSTATUS(wstatus));
-          if(WEXITSTATUS(wstatus))
-	      return false;
-      } 
-    } else {
-      if (execv(command[0], command) == -1) {
-	  perror("execv");
-	  return false;
-      }
+    if (pid == -1)
+	return false;
+    else if (pid == 0) 
+    {
+        execv (command[0], command);
+        printf(">>> execv false\n");
+	exit(1);
     }
-
-    return true;
+    if (waitpid (pid, &status, 0) == -1)
+    {
+	printf(">>> wait false\n");
+        return false;
+    }    
+    else if (WIFEXITED (status))
+    {
+    	printf(">>> %d\n", WIFEXITED (status));
+    	printf(">>> %d\n", WEXITSTATUS (status));
+    	if(WEXITSTATUS (status) == 0 && exe_err == 0)
+    	{
+		printf(">>> true\n");    	
+		return true;
+    	}
+	printf(">>> false\n");
+    }	
+    
+    printf("> false\n");	
+    return false;
 }
 
 /**
@@ -122,9 +128,6 @@ bool do_exec_redirect(const char *outputfile, int count, ...)
 
     command[count] = NULL;
 
-    printf(">> %s\n", outputfile);	
-    int fd = open(outputfile, O_WRONLY);
-
 /*
  * TODO
  *   Call execv, but first using https://stackoverflow.com/a/13784315/1446624 as a refernce,
@@ -133,39 +136,40 @@ bool do_exec_redirect(const char *outputfile, int count, ...)
  *
 */
     fflush(stdout);
+
     pid_t pid = fork();
-    
-    printf("id %d\n", pid);
-    
-    if (pid) 
-    {
-      int wstatus = 0;
-      if (waitpid(pid, &wstatus, 0) == -1) 
-      {
-        perror("waitpid");
- //       exit(EXIT_FAILURE);
-	 return false;
-      }
+    int status, exe_err = 0;	
+    int fd = open(outputfile, O_WRONLY);
 
-      if (WIFEXITED(wstatus)) 
-      {
-          //printf("error: %d\n", WEXITSTATUS(wstatus));
-          if(WEXITSTATUS(wstatus))
-	      return false;
-      } 
-    } 
-    else 
+    if (pid == -1)
+	return false;
+    else if (pid == 0) 
     {
-      dup2(fd, 1); 
-      if (execv(command[0], command) == -1) 
-      {
-	  perror("execv");
-	  return false;
-      }
+        dup2(fd, 1); 
+        execv (command[0], command);
+        printf(">>> execv false\n");
+	exit(1);
     }
-
+    if (waitpid (pid, &status, 0) == -1)
+    {
+	printf(">>> wait false\n");
+        return false;
+    }    
+    else if (WIFEXITED (status))
+    {
+    	printf(">>> %d\n", WIFEXITED (status));
+    	printf(">>> %d\n", WEXITSTATUS (status));
+    	if(WEXITSTATUS (status) == 0 && exe_err == 0)
+    	{
+		printf(">>> true\n");    	
+		return true;
+    	}
+	printf(">>> false\n");
+    }	
+ 
     va_end(args);
-    //close(fd);	
+    close(fd);	
 
-    return true;
+    return false;
+
 }
