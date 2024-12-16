@@ -1,7 +1,9 @@
 
 CC=$(CROSS_COMPILE)gcc
 
-writer: writer.cpp
+all: writer
+
+writer: writer.cpp Makefile
 	$(CC) -c writer.cpp 
 	$(CC) -o writer writer.o 
 
