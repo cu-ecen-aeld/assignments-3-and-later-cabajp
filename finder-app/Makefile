@@ -1,5 +1,5 @@
 
-CC=$(CROSS_COMPILE)gcc
+CC=$(CROSS_COMPILE)g++
 
 all: writer
 
