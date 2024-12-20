@@ -1,10 +1,10 @@
 
-CXX=$(CROSS_COMPILE)g++
+CC=$(CROSS_COMPILE)gcc
 
 all: writer
 
 writer: writer.cpp Makefile
-	$(CXX) writer.cpp -o writer  
+	$(CC) writer.cpp -o writer  
 
 clean:
 	rm -f writer
