@@ -35,9 +35,6 @@ fi
 if [ -d $filesdir ]
 then
 	#echo "file ${filesdir}, str ${searchstr}"
-
-	
-
 	echo "The number of files are $(find $filesdir -type f -exec grep -l $searchstr {} \; | wc -l) and the number of matching lines are $(find $filesdir -type f -exec grep $searchstr {} \; | wc -l)"
 else
 	echo "dir ko"

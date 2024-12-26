@@ -1,5 +1,5 @@
 #!/bin/sh
-# Tester script for assignment 1 and assignment 2
+# Tester script for assignment 	1 and assignment 2
 # Author: Siddhant Jajoo
 
 set -e
@@ -48,7 +48,8 @@ then
 		exit 1
 	fi
 fi
-echo "Removing the old writer utility and compiling as a native application"
+
+#echo "Removing the old writer utility and compiling as a native application"
 #make clean
 #make
 
@@ -65,6 +66,7 @@ rm -rf /tmp/aeld-data
 set +e
 echo ${OUTPUTSTRING} | grep "${MATCHSTR}"
 if [ $? -eq 0 ]; then
+	echo ${OUTPUTSTRING} > /tmp/assignment4-result.txt
 	echo "success"
 	exit 0
 else
