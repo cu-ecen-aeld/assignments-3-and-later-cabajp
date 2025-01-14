@@ -44,6 +44,17 @@ int main(int argc, char** argv )
         daemon = 1;
     }	
 
+
+    /* open file for output */	    
+    outfile = fopen(FILE_NAME, "w+");
+    if (outfile == NULL) 
+    {
+        syslog(LOG_ERR, "File %s, could not be opened", FILE_NAME);
+        closelog();
+        exit (EXIT_FAILURE);
+    }	
+
+
     openlog("aesdsocket", 0, LOG_USER);	
  
     /* register handler for SIGINT or SIGTERM */
@@ -96,6 +107,8 @@ void signal_handler (int signo)
     * world. I'll discuss why in the section
     * "Reentrancy."
     */
+    
+    printf("Caught signal, exiting!\n");
     syslog(LOG_INFO,"Caught signal, exiting!\n");
     shutdown(sockfd, SHUT_WR);
     close(sockfd);
@@ -118,9 +131,19 @@ void createServer(void)
     	// make a socket:
     	sockfd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
     	
+    	if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &(int){1}, sizeof(int)) < 0)
+            printf("setsockopt(SO_REUSEADDR) failed\n");
+    	
      	// bind it to the port we passed in to getaddrinfo():
-        bind(sockfd, res->ai_addr, res->ai_addrlen);
-    	listen(sockfd, 1);
+        if(bind(sockfd, res->ai_addr, res->ai_addrlen) == -1)
+        {
+		printf("Bind Err\n");	
+        }
+        
+    	if(listen(sockfd, 1) == -1)
+    	{
+    		printf("Listen Err\n");	
+    	}
     	
         printf("listening\n");	
         
@@ -135,14 +158,6 @@ void waitForData(void)
 
     while(1)
     {
-        /* open file for output */	    
-    	outfile = fopen(FILE_NAME, "a+");
-    	if (outfile == NULL) 
-    	{
-    	    syslog(LOG_ERR, "File %s, could not be opened", FILE_NAME);
-    	    closelog();
-    	    exit (EXIT_FAILURE);
-    	}	
    	
     	// now accept an incoming connection:
     	addr_size = sizeof their_addr;
@@ -168,8 +183,7 @@ void waitForData(void)
     	sendfile(new_fd);
     	
     	close(new_fd);
-    	fclose(outfile);	
-    }
+     }
 }
 
 int sendfile(int socket)
